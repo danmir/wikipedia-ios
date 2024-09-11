@@ -46,7 +46,9 @@ class PlacesViewController: ViewController, UISearchBarDelegate, ArticlePopoverV
     fileprivate var siteURL: URL {
         return MWKDataStore.shared().primarySiteURL ?? NSURL.wmf_URLWithDefaultSiteAndCurrentLocale()!
     }
-    
+
+    fileprivate var postponedLocation: CLLocation? = nil
+
     fileprivate var currentGroupingPrecision: QuadKeyPrecision = 1
     fileprivate var selectedArticlePopover: ArticlePopoverViewController?
     fileprivate var selectedArticleAnnotationView: MapAnnotationView?
@@ -210,6 +212,10 @@ class PlacesViewController: ViewController, UISearchBarDelegate, ArticlePopoverV
         overlaySliderPanGestureRecognizer = panGR
 
         self.view.layoutIfNeeded()
+
+        if let postponedLocation {
+            self.zoomAndPanMapView(toLocation: postponedLocation)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -1132,6 +1138,15 @@ class PlacesViewController: ViewController, UISearchBarDelegate, ArticlePopoverV
     func selectArticlePlace(_ articlePlace: ArticlePlace) {
         mapView.selectAnnotation(articlePlace, animated: articlePlace.identifier != previouslySelectedArticlePlaceIdentifier)
         previouslySelectedArticlePlaceIdentifier = articlePlace.identifier
+    }
+
+    @objc func preselectLocation(withLatitude latitude: Double, longitude: Double) {
+        let location = CLLocation(latitude: latitude, longitude: longitude)
+        guard mapView != nil else {
+            self.postponedLocation = location
+            return
+        }
+        self.zoomAndPanMapView(toLocation: location)
     }
 
     // MARK: - Search History

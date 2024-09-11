@@ -1203,6 +1203,18 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
             [self dismissPresentedViewControllers];
             [self setSelectedIndex:WMFAppTabTypePlaces];
             [self.currentTabNavigationController popToRootViewControllerAnimated:animated];
+            NSString *latitudeString = activity.userInfo[@"lat"];
+            NSString *longitudeString = activity.userInfo[@"long"];
+
+            if (latitudeString && longitudeString) {
+                double latitude = [latitudeString doubleValue];
+                double longitude = [longitudeString doubleValue];
+
+                [[self placesViewController] preselectLocationWithLatitude:latitude longitude:longitude];
+            } else {
+                NSLog(@"Latitude or Longitude is missing in the userInfo.");
+            }
+
             NSURL *articleURL = activity.wmf_linkURL;
             if (articleURL) {
                 // For "View on a map" action to succeed, view mode has to be set to map.
